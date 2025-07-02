@@ -13,7 +13,7 @@ async function main(){
         throw new Error("Mongodb credentials are missing in .env file!")
     }
     try{
-        await mongoose.connect(`mongodb+srv://${mongoUser}:${mongoPassword}@cluster0.r7awt.mongodb.net/booksDB?retryWrites=true&w=majority&appName=Cluster0`);
+        await mongoose.connect(`mongodb+srv://${mongoUser}:${mongoPassword}@cluster0.r7awt.mongodb.net/booksManagementDB?retryWrites=true&w=majority&appName=Cluster0`);
         console.log("Connected to mongoose");
         server = app.listen(port,()=>{
             console.log(`App is running is on port: ${port}`)
