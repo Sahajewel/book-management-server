@@ -1,9 +1,13 @@
 import express, { Application, Request, Response } from "express";
 import { Book } from "./app/books/bookModels";
+import cors from "cors"
+import { BorrowBook } from "./app/borrowBooks/borrowModels";
 
 const app: Application = express();
 app.use(express.json());
-
+app.use(cors({
+    origin: "http://localhost:5173"
+}))
 // all books api create read update and delete
 
 // create api
@@ -120,6 +124,57 @@ app.delete("/books/:id", async (req: Request, res: Response) => {
     });
   }
 });
+
+//  all borrow api created
+app.post("/borrow", async(req:Request, res: Response)=>{
+  try{
+    const body = req.body;
+    const borrowBook = await BorrowBook.create(body)
+    const bookToUpdate = await Book.findById(body.book);
+    if(!bookToUpdate || bookToUpdate.copies < body.quantity){
+       res.status(400).json({
+        success: false,
+        message: "Not enough copies available to borrow"
+      });
+      return
+    }
+    bookToUpdate.copies -= body.quantity;
+    if(bookToUpdate.copies === 0){
+      bookToUpdate.available = false;
+    }
+    await bookToUpdate.save()
+    res.status(200).json({
+      success: true,
+      message: "successfully Borrowed Book",
+      data: borrowBook
+    })
+  }catch(error: any){
+    res.status(500).json({
+      success: false,
+      message: "Failed to borrow book",
+      error: error?.message || "Unknown error"
+    })
+    
+
+  }
+});
+//  get borrowed summary
+app.get("/borrow-summary", async(req:Request, res: Response)=>{
+  try{
+    const borrowSummary = await BorrowBook.find().populate("book");
+    res.status(200).json({
+      success: true,
+      message:"Borrow summary retrieved successfully",
+      data: borrowSummary
+    })
+  }catch(error: any){
+    res.status(500).json({
+      success: false,
+      message : "Failed to fetch borrow summary",
+      error: error?.message || "Unknow error"
+    })
+  }
+})
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello world");
 });
