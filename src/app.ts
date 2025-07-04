@@ -14,6 +14,9 @@ app.use(cors({
 app.post("/create-book", async (req: Request, res: Response) => {
   try {
     const body = req.body;
+    if(body.copies === 0 ){
+      body.available = false;
+    }
     const book = await Book.create(body);
     res.status(200).json({
       success: true,
@@ -126,38 +129,56 @@ app.delete("/books/:id", async (req: Request, res: Response) => {
 });
 
 //  all borrow api created
-app.post("/borrow", async(req:Request, res: Response)=>{
-  try{
+app.post("/borrow", async (req: Request, res: Response) => {
+  try {
     const body = req.body;
-    const borrowBook = await BorrowBook.create(body)
+
+    // Step 1: Find the book first
     const bookToUpdate = await Book.findById(body.book);
-    if(!bookToUpdate || bookToUpdate.copies < body.quantity){
-       res.status(400).json({
+
+    if (!bookToUpdate) {
+       res.status(404).json({
         success: false,
-        message: "Not enough copies available to borrow"
+        message: "Book not found",
       });
       return
     }
+
+    // Step 2: Validate quantity
+    if (bookToUpdate.copies < body.quantity || body.quantity < 1) {
+       res.status(400).json({
+        success: false,
+        message: "Invalid quantity. Not enough copies available.",
+      });
+      return
+    }
+
+    // Step 3: Create borrow
+    const borrowBook = await BorrowBook.create(body);
+
+    // Step 4: Update book copies & available status
     bookToUpdate.copies -= body.quantity;
-    if(bookToUpdate.copies === 0){
+    if (bookToUpdate.copies === 0) {
       bookToUpdate.available = false;
     }
-    await bookToUpdate.save()
-    res.status(200).json({
+    await bookToUpdate.save();
+
+     res.status(200).json({
       success: true,
-      message: "successfully Borrowed Book",
-      data: borrowBook
-    })
-  }catch(error: any){
-    res.status(500).json({
+      message: "Successfully borrowed book",
+      data: borrowBook,
+    });
+    return
+  } catch (error: any) {
+     res.status(500).json({
       success: false,
       message: "Failed to borrow book",
-      error: error?.message || "Unknown error"
-    })
-    
-
+      error: error?.message || "Unknown error",
+    });
+    return
   }
 });
+
 //  get borrowed summary
 app.get("/borrow-summary", async(req:Request, res: Response)=>{
   try{
