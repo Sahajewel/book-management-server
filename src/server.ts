@@ -7,8 +7,8 @@ let server: Server;
 const port = process.env.PORT || 5000;
 
 async function main(){
-    const mongoUser = process.env.USER;
-    const mongoPassword = process.env.PASSWORD;
+    const mongoUser = process.env.MONGO_USER;
+    const mongoPassword = process.env.MONGO_PASSWORD;
     if(!mongoUser || !mongoPassword){
         throw new Error("Mongodb credentials are missing in .env file!")
     }

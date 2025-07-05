@@ -10,7 +10,7 @@ This is the **server-side application** for the Minimal Library Management Syste
 
 ## 🌐 Live API
 
-🔗 [Visit Backend](https://your-backend-deployment-link.com)
+🔗 [Visit Backend](https://book-management-server-steel.vercel.app)
 
 ---
 
