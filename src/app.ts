@@ -106,7 +106,9 @@ app.put("/edit-book/:id", async (req: Request, res: Response) => {
 app.delete("/books/:id", async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
+
     const deleteBook = await Book.findByIdAndDelete(id);
+
     if (!deleteBook) {
       res.status(404).json({
         success: false,
@@ -114,9 +116,13 @@ app.delete("/books/:id", async (req: Request, res: Response) => {
       });
       return;
     }
+
+    // 🧹 Delete all borrow records related to this book
+    await BorrowBook.deleteMany({ book: id });
+
     res.status(200).json({
       success: true,
-      message: "Book deleted successfully",
+      message: "Book and related borrow records deleted successfully",
       data: deleteBook,
     });
   } catch (error: any) {
@@ -127,6 +133,7 @@ app.delete("/books/:id", async (req: Request, res: Response) => {
     });
   }
 });
+
 
 //  all borrow api created
 app.post("/borrow", async (req: Request, res: Response) => {
